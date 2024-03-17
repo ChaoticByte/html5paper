@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from argparse import ArgumentParser
+from datetime import datetime
 from pathlib import Path
 
 from jinja2 import Template
@@ -98,6 +99,10 @@ if __name__ == "__main__":
     # template content
     with args.template.open("r") as f:
         content_template = Template(f.read())
+    # additional functions
+    content_template.globals['now'] = datetime.now
+    content_template.globals['strftime'] = datetime.strftime
+    # render
     content = content_template.render(data)
     # template out complete html document
     result = BASE_TEMPLATE.render(lang=data["lang"], title=data["title"], paper_css=PAPER_CSS, css=css, content=content)
