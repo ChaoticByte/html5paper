@@ -7,6 +7,9 @@ from pathlib import Path
 from jinja2 import Template
 from yaml import safe_load
 
+# Paper CSS by cognitom
+# https://github.com/cognitom/paper-css
+# LICENSE: MIT
 PAPER_CSS = """@page { margin: 0 }
 body { margin: 0 }
 .sheet {
