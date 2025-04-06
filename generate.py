@@ -62,12 +62,13 @@ BASE_TEMPLATE = Template(
 <meta charset="UTF-8">
 <title>{{ title }}</title>
 </head>
-<body class="A4">
+<body class="{{ paper_size }} {{ orientation }}">
 <style>
 /* paper.css -> https://github.com/cognitom/paper-css */
 {{ paper_css }}
+/* predefined */
+@page { size: {{ paper_size }} {{ orientation }}; }
 /* own rules */
-@page { size: A4; }
 {{ css }}
 </style>
 {{ content }}
@@ -86,19 +87,34 @@ if __name__ == "__main__":
         "-s", "--css",
         help="The path to the css file",
         metavar="PATH",
-        type=Path, required=True)
+        type=Path)
     argp.add_argument(
         "-d", "--data",
         help="The path to the yaml file containing the variables used in the templates",
         metavar="PATH",
         type=Path, required=True)
+    argp.add_argument(
+        "--size",
+        help="The paper size (default: A4)",
+        choices=["A3", "A4", "A5", "letter", "legal"],
+        default="A4"
+    )
+    argp.add_argument(
+        "--orientation",
+        help="The page orientation (default: portrait)",
+        choices=["portrait", "landscape"],
+        default="portrait"
+    )
     args = argp.parse_args()
     # load data
     with args.data.open("r") as f:
         data = safe_load(f)
     # load css
-    with args.css.open("r") as f:
-        css = f.read()
+    if args.css is None:
+        css = "/* empty */"
+    else:
+        with args.css.open("r") as f:
+            css = f.read()
     # template content
     with args.template.open("r") as f:
         content_template = Template(f.read())
@@ -108,5 +124,13 @@ if __name__ == "__main__":
     # render
     content = content_template.render(data)
     # template out complete html document
-    result = BASE_TEMPLATE.render(lang=data["lang"], title=data["title"], paper_css=PAPER_CSS, css=css, content=content)
+    result = BASE_TEMPLATE.render(
+        lang=data["lang"],
+        title=data["title"],
+        paper_size=args.size,
+        orientation=args.orientation,
+        paper_css=PAPER_CSS,
+        css=css,
+        content=content
+    )
     print(result)
